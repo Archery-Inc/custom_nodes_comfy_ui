@@ -1,4 +1,10 @@
 import folder_paths
+from pathlib import Path
+
+folder_paths.add_model_folder_path("animatediff_models", str(Path(__file__).parent.parent / "models"))
+folder_paths.add_model_folder_path("animatediff_models", str(Path(folder_paths.models_dir) / "animatediff_models"))
+folder_paths.add_model_folder_path("animatediff_motion_lora", str(Path(__file__).parent.parent / "motion_lora"))
+folder_paths.add_model_folder_path("animatediff_motion_lora", str(Path(folder_paths.models_dir) / "animatediff_motion_lora"))
 
 class ArcheryInputBool:
     CATEGORY = "archery-inc"

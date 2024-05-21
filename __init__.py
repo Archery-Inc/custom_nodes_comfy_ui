@@ -3,7 +3,6 @@ from .inputs import *
 from .glsl import ArcheryGLSL
 import shutil, os, __main__, filecmp
 
-
 def install_js_files():
     extensions_folder = os.path.join(
         os.path.dirname(os.path.realpath(__main__.__file__)),
