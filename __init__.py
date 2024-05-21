@@ -1,12 +1,35 @@
 from .logic import ArcheryIfElse
 from .inputs import *
 from .glsl import ArcheryGLSL
-import shutil
+import shutil, os, __main__, filecmp
 
-shutil.copyfile(
-    "/src/ComfyUI/custom_nodes/ComfyUI-archery/js/index.js",
-    "/src/ComfyUI/web/extensions/archery/index.js",
-)
+
+def install_js_files():
+    extensions_folder = os.path.join(
+        os.path.dirname(os.path.realpath(__main__.__file__)),
+        "web" + os.sep + "extensions" + os.sep + "archery",
+    )
+    javascript_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "js")
+    if not os.path.exists(extensions_folder):
+        print('Making the "web\\extensions\\archery" folder')
+        os.makedirs(extensions_folder)
+
+    result = filecmp.dircmp(javascript_folder, extensions_folder)
+    if result.left_only or result.diff_files:
+        print("Update to javascripts files detected")
+        file_list = list(result.left_only)
+        file_list.extend(x for x in result.diff_files if x not in file_list)
+
+        for file in file_list:
+            print(f"Copying {file} to extensions folder")
+            src_file = os.path.join(javascript_folder, file)
+            dst_file = os.path.join(extensions_folder, file)
+            if os.path.exists(dst_file):
+                os.remove(dst_file)
+            shutil.copy(src_file, dst_file)
+
+
+install_js_files()
 
 NODE_CLASS_MAPPINGS = {
     "ArcheryInputBool": ArcheryInputBool,
