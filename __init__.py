@@ -1,33 +1,47 @@
-class Bool:
-    RETURN_TYPES = ("BOOLEAN",)
-    RETURN_NAMES = ("BOOLEAN",)
-    CATEGORY = "archery-inc"
-    FUNCTION = "run"
+from .logic import ArcheryIfElse
+from .inputs import *
+from .glsl import ArcheryGLSL
+import shutil
 
-    @classmethod
-    def INPUT_TYPES(s):
-        return {"required": {"value": ("BOOLEAN", {"default": False})}}
+shutil.copyfile(
+    "/src/ComfyUI/custom_nodes/ComfyUI-archery/js/index.js",
+    "/src/ComfyUI/web/extensions/archery/index.js",
+)
 
-    def run(self, value):
-        return (value,)
+NODE_CLASS_MAPPINGS = {
+    "ArcheryInputBool": ArcheryInputBool,
+    "ArcheryInputFloat": ArcheryInputFloat,
+    "ArcheryInputInt": ArcheryInputInt,
+    "ArcheryInputAnimateDiffModelSelector": ArcheryInputAnimateDiffModelSelector,
+    "ArcheryInputCheckpointSelector": ArcheryInputCheckpointSelector,
+    "ArcheryInputIpAdapterSelector": ArcheryInputIpAdapterSelector,
+    "ArcheryInputIpAdapterWeightSelector": ArcheryInputIpAdapterWeightSelector,
+    "ArcheryInputLoraSelector": ArcheryInputLoraSelector,
+    "ArcheryInputUpscalerSelector": ArcheryInputUpscalerSelector,
+    "ArcheryInputAnimateDiffModelSelector": ArcheryInputAnimateDiffModelSelector,
+    "ArcheryInputNoiseTypeSelector": ArcheryInputNoiseTypeSelector,
+    "ArcheryInputAnimateDiffMotionLoraSelector": ArcheryInputAnimateDiffMotionLoraSelector,
+    "ArcheryInputString": ArcheryInputString,
+    "ArcheryInputStringMultiline": ArcheryInputStringMultiline,
+    "ArcheryIfElse": ArcheryIfElse,
+    "ArcheryGLSL": ArcheryGLSL,
+}
 
-
-class Int:
-    RETURN_TYPES = ("INT",)
-    RETURN_NAMES = ("INT",)
-    CATEGORY = "archery-inc"
-    FUNCTION = "run"
-
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "value": ("INT", {"default": 0, "min": -2147483648, "max": 2147483647})
-            }
-        }
-
-    def run(self, value):
-        return (value,)
-
-NODE_CLASS_MAPPINGS = {"Bool": Bool, "Int": Int}
-NODE_DISPLAY_NAME_MAPPINGS = {"Bool Constant": "Bool", "Int": "Int"}
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "ArcheryInputBool": "Archery Input Bool",
+    "ArcheryInputFloat": "Archery Input Float",
+    "ArcheryInputInt": "Archery Input Int",
+    "ArcheryInputAnimateDiffModelSelector": "Archery Input AnimateDiffModel Selector",
+    "ArcheryInputCheckpointSelector": "Archery Input Checkpoint Selector",
+    "ArcheryInputIpAdapterSelector": "Archery Input IpAdapter Selector",
+    "ArcheryInputIpAdapterWeightSelector": "Archery Input IpAdapterWeight Selector",
+    "ArcheryInputLoraSelector": "Archery Input Lora Selector",
+    "ArcheryInputUpscalerSelector": "Archery Input Upscaler Selector",
+    "ArcheryInputAnimateDiffModelSelector": "Archery Input AnimateDiffModel Selector",
+    "ArcheryInputNoiseTypeSelector": "Archery Input Noise Type Selector",
+    "ArcheryInputAnimateDiffMotionLoraSelector": "Archery Input Animate Diff Motion Lora Selector",
+    "ArcheryInputString": "Archery Input String",
+    "ArcheryInputStringMultiline": "Archery Input String Multiline",
+    "ArcheryIfElse": "Archery If Else",
+    "ArcheryGLSL": "Archery GLSL",
+}
