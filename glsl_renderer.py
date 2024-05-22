@@ -31,7 +31,7 @@ FRAGMENT_SHADER_HEADER = """
 
 class GLSL:
     def __init__(self, images, out_width, out_height, shader, frame_rate, frame_count):
-        ctx = moderngl.create_context(standalone=True)
+        ctx = moderngl.create_context(standalone=True, backend="egl", libgl="libGL.so.1", libegl="libEGL.so.1")
         program = ctx.program(VERTEX_SHADER, FRAGMENT_SHADER_HEADER + shader)
 
         vbo = ctx.buffer(
