@@ -1,10 +1,12 @@
 import folder_paths
 from pathlib import Path
 
-folder_paths.add_model_folder_path("animatediff_models", str(Path(__file__).parent.parent / "models"))
-folder_paths.add_model_folder_path("animatediff_models", str(Path(folder_paths.models_dir) / "animatediff_models"))
-folder_paths.add_model_folder_path("animatediff_motion_lora", str(Path(__file__).parent.parent / "motion_lora"))
-folder_paths.add_model_folder_path("animatediff_motion_lora", str(Path(folder_paths.models_dir) / "animatediff_motion_lora"))
+COMFY_PATH = Path(__file__).parent.parent.parent
+
+folder_paths.add_model_folder_path("animatediff_models", str(COMFY_PATH / "models" / "animatediff_models"))
+folder_paths.add_model_folder_path("animatediff_models", str(COMFY_PATH / "custom_models" / "ComfyUI-AnimateDiff-Evolved" / "models" ))
+folder_paths.add_model_folder_path("animatediff_motion_lora", str(COMFY_PATH / "models" / "animatediff_motion_lora"))
+folder_paths.add_model_folder_path("animatediff_motion_lora", str(COMFY_PATH / "custom_models" / "ComfyUI-AnimateDiff-Evolved" / "motion_lora"))
 
 class ArcheryInputBool:
     CATEGORY = "archery-inc"
