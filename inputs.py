@@ -4,9 +4,10 @@ from pathlib import Path
 COMFY_PATH = Path(__file__).parent.parent.parent
 
 folder_paths.add_model_folder_path("animatediff_models", str(COMFY_PATH / "models" / "animatediff_models"))
-folder_paths.add_model_folder_path("animatediff_models", str(COMFY_PATH / "custom_models" / "ComfyUI-AnimateDiff-Evolved" / "models" ))
+folder_paths.add_model_folder_path("animatediff_models", str(COMFY_PATH / "custom_nodes" / "ComfyUI-AnimateDiff-Evolved" / "models" ))
 folder_paths.add_model_folder_path("animatediff_motion_lora", str(COMFY_PATH / "models" / "animatediff_motion_lora"))
-folder_paths.add_model_folder_path("animatediff_motion_lora", str(COMFY_PATH / "custom_models" / "ComfyUI-AnimateDiff-Evolved" / "motion_lora"))
+folder_paths.add_model_folder_path("animatediff_motion_lora", str(COMFY_PATH / "custom_nodes" / "ComfyUI-AnimateDiff-Evolved" / "motion_lora"))
+
 
 class ArcheryInputBool:
     CATEGORY = "archery-inc"
@@ -30,7 +31,7 @@ class ArcheryInputFloat:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"value": ("FLOAT", {"default": 0, "min": -1000, "max": 1000, "step": 0.001 }) }}
+        return {"required": {"value": ("FLOAT", {"default": 0, "min": -999999999999999999999999, "max": 999999999999999999999999, "step": 0.001 }) }}
 
     def run(self, value):
         return (value,)
@@ -44,7 +45,7 @@ class ArcheryInputInt:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"value": ("INT", {"default": 0, "min": -2147483648, "max": 2147483647}) }}
+        return {"required": {"value": ("INT", {"default": 0, "min": -999999999999999999999999, "max": 999999999999999999999999}) }}
 
     def run(self, value):
         return (value,)
