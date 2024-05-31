@@ -139,18 +139,19 @@ AIO_PREPROCESSORS = ["none", "LineArtPreprocessor", "AnyLineArtPreprocessor_aux"
                      "OpenposePreprocessor", "SavePoseKpsAsJsonFile", "FacialPartColoringFromPoseKps", "UpperBodyTrackingFromPoseKps", "ImageLuminanceDetector", "ImageIntensityDetector", "ScribblePreprocessor", 
                      "Scribble_XDoG_Preprocessor", "Scribble_PiDiNet_Preprocessor", "SAMPreprocessor", "ShufflePreprocessor", "TEED_Preprocessor", "TilePreprocessor", "TTPlanet_TileGF_Preprocessor", 
                      "TTPlanet_TileSimple_Preprocessor", "UniFormer-SemSegPreprocessor", "SemSegPreprocessor", "MaskOptFlow", "Unimatch_OptFlowPreprocessor", "Zoe-DepthMapPreprocessor"]
+
 class ArcheryAIOAuxPreprocessorSelector:
     CATEGORY = 'archery-inc'
     RETURN_TYPES = (AIO_PREPROCESSORS,)
-    RETURN_NAMES = ("value",)
+    RETURN_NAMES = ("preprocessor",)
     FUNCTION = "run"
 
     @classmethod
     def INPUT_TYPES(cls):
-        return {"required": {"value": (AIO_PREPROCESSORS, ),}}
+        return {"required": {"preprocessor": (AIO_PREPROCESSORS, ),}}
 
-    def run(self, value):
-        return (value,)
+    def run(self, preprocessor):
+        return (preprocessor,)
 
 
 class ArcheryInputUpscalerSelector:
