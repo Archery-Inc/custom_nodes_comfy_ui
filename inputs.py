@@ -131,6 +131,28 @@ class ArcheryInputVaeSelector:
     def run(self, value):
         return (value,)
 
+AIO_PREPROCESSORS = ["none", "LineArtPreprocessor", "AnyLineArtPreprocessor_aux", "LineArtPreprocessor", "AnimeLineArtPreprocessor", "LineartStandardPreprocessor", "PiDiNetPreprocessor", "CannyEdgePreprocessor", 
+                     "AnimeFace_SemSegPreprocessor", "ColorPreprocessor", "DensePosePreprocessor", "DepthAnythingPreprocessor", "Zoe_DepthAnythingPreprocessor", "DiffusionEdge_Preprocessor", "DSINE-NormalMapPreprocessor", 
+                     "DWPreprocessor", "AnimalPosePreprocessor", "HEDPreprocessor", "FakeScribblePreprocessor", "InpaintPreprocessor", "LeReS-DepthMapPreprocessor", "Manga2Anime_LineArt_Preprocessor", 
+                     "MediaPipe-FaceMeshPreprocessor",  "MeshGraphormer-DepthMapPreprocessor", "MeshGraphormer+ImpactDetector-DepthMapPreprocessor", "Metric3D-DepthMapPreprocessor", "Metric3D-NormalMapPreprocessor",
+                     "MiDaS-NormalMapPreprocessor", "MiDaS-DepthMapPreprocessor", "M-LSDPreprocessor", "BAE-NormalMapPreprocessor", "OneFormer-COCO-SemSegPreprocessor", "OneFormer-ADE20K-SemSegPreprocessor",
+                     "OpenposePreprocessor", "SavePoseKpsAsJsonFile", "FacialPartColoringFromPoseKps", "UpperBodyTrackingFromPoseKps", "ImageLuminanceDetector", "ImageIntensityDetector", "ScribblePreprocessor", 
+                     "Scribble_XDoG_Preprocessor", "Scribble_PiDiNet_Preprocessor", "SAMPreprocessor", "ShufflePreprocessor", "TEED_Preprocessor", "TilePreprocessor", "TTPlanet_TileGF_Preprocessor", 
+                     "TTPlanet_TileSimple_Preprocessor", "UniFormer-SemSegPreprocessor", "SemSegPreprocessor", "MaskOptFlow", "Unimatch_OptFlowPreprocessor", "Zoe-DepthMapPreprocessor"]
+
+class ArcheryAIOAuxPreprocessorSelector:
+    CATEGORY = 'archery-inc'
+    RETURN_TYPES = (AIO_PREPROCESSORS,)
+    RETURN_NAMES = ("preprocessor",)
+    FUNCTION = "run"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"preprocessor": (AIO_PREPROCESSORS, ),}}
+
+    def run(self, preprocessor):
+        return (preprocessor,)
+
 
 class ArcheryInputUpscalerSelector:
     CATEGORY = 'archery-inc'
