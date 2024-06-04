@@ -80,6 +80,52 @@ class ArcheryInputIpAdapterWeightTypeSelector:
     def run(self, value):
         return (value,)
 
+SAMPLER_CHOICES = ["euler", "euler_ancestral", "heun", "heunpp2", "dpm_2", "dpm_2_ancestral", "lms", "lcm", "dpm_fast", "dpm_adaptive", "dpmpp_2s_acestral", "dpmpp_sde", "dpmpp_sde_gpu", "dpmpp_2m", "dpmpp_2m_sde", 
+                   "dpmpp_2m_sde_gpu", "dpmpp_3m_sde", "dpmpp_3m_sde_gpu", "ddpm", "ddim", "uni_pc", "uni_pc_bh2"]
+
+class ArcheryInputKSamplerSamplerSelector:
+    CATEGORY = 'archery-inc'
+    RETURN_TYPES = (SAMPLER_CHOICES,)
+    RETURN_NAMES = ("value",)
+    FUNCTION = "run"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"value": (SAMPLER_CHOICES, ),}}
+
+    def run(self, value):
+        return (value,)
+
+SCHEDULER_CHOICES = ["normal", "karras", "exponential", "ddim_uniform", "sgm_uniform", "simple"]
+
+class ArcheryInputKSamplerSchedulerSelector:
+    CATEGORY = 'archery-inc'
+    RETURN_TYPES = (SCHEDULER_CHOICES,)
+    RETURN_NAMES = ("value",)
+    FUNCTION = "run"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"value": (SCHEDULER_CHOICES, ),}}
+
+    def run(self, value):
+        return (value,)
+    
+
+BETA_SCHEDULES = ["autoselect", "use existing", "sqrt_linear (AnimateDiff)", "linear (AnimateDiff-SDXL)", "linear (HotshotXL/default)", "avg(sqrt_linear,linear)", "lcm avg(sqrt_linear,linear)", "lcm", "lcm[100_ots]", "lcm[25_ots]", "lcm >> sqrt_linear", "sqrt", "cosine", "squaredcos_cap_v2"]
+
+class ArcheryInputAnimateDiffBetaScheduleSelector:
+    CATEGORY = 'archery-inc'
+    RETURN_TYPES = (BETA_SCHEDULES,)
+    RETURN_NAMES = ("value",)
+    FUNCTION = "run"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"value": (BETA_SCHEDULES, ),}}
+
+    def run(self, value):
+        return (value,)
 
 class ArcheryInputControlNetSelector:
     CATEGORY = 'archery-inc'
@@ -139,7 +185,6 @@ AIO_PREPROCESSORS = ["none", "LineArtPreprocessor", "AnyLineArtPreprocessor_aux"
                      "OpenposePreprocessor", "SavePoseKpsAsJsonFile", "FacialPartColoringFromPoseKps", "UpperBodyTrackingFromPoseKps", "ImageLuminanceDetector", "ImageIntensityDetector", "ScribblePreprocessor", 
                      "Scribble_XDoG_Preprocessor", "Scribble_PiDiNet_Preprocessor", "SAMPreprocessor", "ShufflePreprocessor", "TEED_Preprocessor", "TilePreprocessor", "TTPlanet_TileGF_Preprocessor", 
                      "TTPlanet_TileSimple_Preprocessor", "UniFormer-SemSegPreprocessor", "SemSegPreprocessor", "MaskOptFlow", "Unimatch_OptFlowPreprocessor", "Zoe-DepthMapPreprocessor"]
-
 class ArcheryAIOAuxPreprocessorSelector:
     CATEGORY = 'archery-inc'
     RETURN_TYPES = (AIO_PREPROCESSORS,)
@@ -148,10 +193,10 @@ class ArcheryAIOAuxPreprocessorSelector:
 
     @classmethod
     def INPUT_TYPES(cls):
-        return {"required": {"preprocessor": (AIO_PREPROCESSORS, ),}}
+        return {"required": {"value": (AIO_PREPROCESSORS, ),}}
 
-    def run(self, preprocessor):
-        return (preprocessor,)
+    def run(self, value):
+        return (value,)
 
 
 class ArcheryInputUpscalerSelector:
