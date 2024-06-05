@@ -1,5 +1,8 @@
 import folder_paths
 from pathlib import Path
+import torch
+import torchvision.transforms as T
+
 
 COMFY_PATH = Path(__file__).parent.parent.parent
 
@@ -139,6 +142,74 @@ class ArcheryInputControlNetSelector:
 
     def run(self, value):
         return (value,)
+
+class ArcheryImageNoise:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "type": (["fade", "dissolve", "gaussian", "shuffle"], ),
+                "strength": ("FLOAT", { "default": 1.0, "min": 0, "max": 1, "step": 0.05 }),
+                "blur": ("INT", { "default": 0, "min": 0, "max": 32, "step": 1 }),
+                "keep_original_dimensions": ("BOOLEAN", {"default": True}),
+            },
+            "optional": {
+                "image_optional": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "make_noise"
+    CATEGORY = "archery-inc"
+
+    def make_noise(self, type, strength, blur, image_optional=None, keep_original_dimensions=True):
+        if image_optional is None:
+            # Default to a standard size image if none provided
+            image = torch.zeros([1, 224, 224, 3])
+        else:
+            # No resizing or cropping, keep the original image dimensions
+            if keep_original_dimensions:
+                image = image_optional
+            else:
+                transforms = T.Compose([
+                T.CenterCrop(min(image_optional.shape[1], image_optional.shape[2])),
+                T.Resize((224, 224), interpolation=T.InterpolationMode.BICUBIC, antialias=True),
+                ])
+                image = transforms(image_optional.permute([0,3,1,2])).permute([0,2,3,1])
+
+        seed = int(torch.sum(image).item()) % 1000000007  # hash the image to get a seed, grants predictability
+        torch.manual_seed(seed)
+
+        if type == "fade":
+            noise = torch.rand_like(image)
+            noise = image * (1 - strength) + noise * strength
+        elif type == "dissolve":
+            mask = (torch.rand_like(image) < strength).float()
+            noise = torch.rand_like(image)
+            noise = image * (1-mask) + noise * mask
+        elif type == "gaussian":
+            noise = torch.randn_like(image) * strength
+            noise = image + noise
+        elif type == "shuffle":
+            transforms = T.Compose([
+                T.ElasticTransform(alpha=75.0, sigma=(1-strength)*3.5),
+                T.RandomVerticalFlip(p=1.0),
+                T.RandomHorizontalFlip(p=1.0),
+            ])
+            image = transforms(image.permute([0,3,1,2])).permute([0,2,3,1])
+            noise = torch.randn_like(image) * (strength*0.75)
+            noise = image * (1-noise) + noise
+
+        del image
+        noise = torch.clamp(noise, 0, 1)
+
+        if blur > 0:
+            if blur % 2 == 0:
+                blur += 1
+            noise = T.functional.gaussian_blur(noise.permute([0,3,1,2]), blur).permute([0,2,3,1])
+
+        return (noise, )
+
 
 def vae_list():
     vaes = folder_paths.get_filename_list("vae")
