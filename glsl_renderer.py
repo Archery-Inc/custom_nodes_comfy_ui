@@ -45,6 +45,8 @@ class GLSL:
         # Send image to shader
         image = self._resize_and_center_image(images[0], out_width, out_height)
         iChannel0 = ctx.texture(image.size, components=4, data=image.tobytes())
+        iChannel0.repeat_x = False
+        iChannel0.repeat_y = False
         iChannel0.use(location=0)
 
         # Uniform locations
