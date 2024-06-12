@@ -127,7 +127,7 @@ class GLSL:
         else:
             # Vertical image
             margin_percent = 0.3
-        w = (1 - 2 * margin_percent) * out_width
+        w = int((1 - 2 * margin_percent) * out_width)
         pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
 
         final_img.paste(
