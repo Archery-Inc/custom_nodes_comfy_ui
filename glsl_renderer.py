@@ -95,7 +95,7 @@ class GLSL:
         pixels = np.array(image).astype(np.float32) / 255.0
         return torch.from_numpy(pixels)[None,]
     
-    def _hex_to_vec3(hex):
+    def _hex_to_vec3(self, hex):
         h = hex.lstrip('#')
         return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
