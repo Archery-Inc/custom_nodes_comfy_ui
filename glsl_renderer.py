@@ -115,20 +115,18 @@ class GLSL:
         numpy_img = 255.0 * img.cpu().numpy()
         pil_img = Image.fromarray(np.clip(numpy_img, 0, 255).astype(np.uint8))
         final_img = Image.new("RGBA", (out_width, out_height))
-        img_aspect = pil_img.width / pil_img.height
 
         # Put the image at the center while keeping aspect ratio
-        if 0.8 < img_aspect < 1.2:
-            # Square image
-            margin_percent = 0.2
-        elif img_aspect > 1.2:
+        margin_percent_x = 0.2
+        margin_percent_y = 0.3
+        if out_width / out_height < pil_img.width / pil_img.height:
             # Horizontal image
-            margin_percent = 0.1
+            w = int((1 - 2 * margin_percent_x) * out_width)
+            pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
         else:
             # Vertical image
-            margin_percent = 0.3
-        w = int((1 - 2 * margin_percent) * out_width)
-        pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
+            h = int((1 - 2 * margin_percent_y) * out_height)
+            pil_img = pil_img.resize((math.ceil(h * pil_img.width / pil_img.height), h))
 
         final_img.paste(
             pil_img,
