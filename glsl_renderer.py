@@ -32,8 +32,20 @@ FRAGMENT_SHADER_HEADER = """
 
 
 class GLSL:
-    def __init__(self, images, out_width, out_height, shader, frame_rate, frame_count, background, foreground):
-        ctx = moderngl.create_context(standalone=True, backend="egl", libgl="libGL.so.1", libegl="libEGL.so.1")
+    def __init__(
+        self,
+        images,
+        out_width,
+        out_height,
+        shader,
+        frame_rate,
+        frame_count,
+        background,
+        foreground,
+    ):
+        ctx = moderngl.create_context(
+            standalone=True, backend="egl", libgl="libGL.so.1", libegl="libEGL.so.1"
+        )
         program = ctx.program(VERTEX_SHADER, FRAGMENT_SHADER_HEADER + shader)
 
         vbo = ctx.buffer(
@@ -94,24 +106,29 @@ class GLSL:
         # Convert image to torch tensor
         pixels = np.array(image).astype(np.float32) / 255.0
         return torch.from_numpy(pixels)[None,]
-    
+
     def _hex_to_vec3(self, hex):
-        h = hex.lstrip('#')
-        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+        h = hex.lstrip("#")
+        return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
 
     def _resize_and_center_image(self, img, out_width, out_height):
         numpy_img = 255.0 * img.cpu().numpy()
         pil_img = Image.fromarray(np.clip(numpy_img, 0, 255).astype(np.uint8))
         final_img = Image.new("RGBA", (out_width, out_height))
+        img_aspect = pil_img.width / pil_img.height
 
-        margin = 50
         # Put the image at the center while keeping aspect ratio
-        if out_width / out_height < pil_img.width / pil_img.height:
-            w = out_width - 2 * margin
-            pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
+        if 0.8 < img_aspect < 1.2:
+            # Square image
+            margin_percent = 0.2
+        elif img_aspect > 1.2:
+            # Horizontal image
+            margin_percent = 0.1
         else:
-            h = out_height - 2 * margin
-            pil_img = pil_img.resize((math.ceil(h * pil_img.width / pil_img.height), h))
+            # Vertical image
+            margin_percent = 0.3
+        w = (1 - 2 * margin_percent) * out_width
+        pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
 
         final_img.paste(
             pil_img,
