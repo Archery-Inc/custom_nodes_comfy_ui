@@ -24,13 +24,15 @@ FRAGMENT_SHADER_HEADER = """
     uniform float iTimeDelta;
     uniform int iFrame;
     uniform sampler2D iChannel0;
+    uniform vec3 backgroundColor;
+    uniform vec3 foregroundColor;
 
     out vec4 fragColor;
 """
 
 
 class GLSL:
-    def __init__(self, images, out_width, out_height, shader, frame_rate, frame_count):
+    def __init__(self, images, out_width, out_height, shader, frame_rate, frame_count, background, foreground):
         ctx = moderngl.create_context(standalone=True, backend="egl", libgl="libGL.so.1", libegl="libEGL.so.1")
         program = ctx.program(VERTEX_SHADER, FRAGMENT_SHADER_HEADER + shader)
 
@@ -55,6 +57,8 @@ class GLSL:
         iResolution = program.get("iResolution", None)
         iTimeDelta = program.get("iTimeDelta", None)
         iDuration = program.get("iDuration", None)
+        backgroundColor = program.get("backgroundColor", None)
+        foregroundColor = program.get("foregroundColor", None)
 
         # Uniform initialization
         self.runtime = 0
@@ -65,6 +69,10 @@ class GLSL:
             iTimeDelta.value = self.delta
         if iDuration:
             iDuration.value = self.delta * frame_count
+        if backgroundColor:
+            backgroundColor.value = self._hex_to_vec3(background)
+        if foregroundColor:
+            foregroundColor.value = self._hex_to_vec3(foreground)
 
     def render(self, frame_index, skip_frame):
         self.fbo.use()
@@ -86,6 +94,10 @@ class GLSL:
         # Convert image to torch tensor
         pixels = np.array(image).astype(np.float32) / 255.0
         return torch.from_numpy(pixels)[None,]
+    
+    def _hex_to_vec3(hex):
+        h = hex.lstrip('#')
+        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
     def _resize_and_center_image(self, img, out_width, out_height):
         numpy_img = 255.0 * img.cpu().numpy()
