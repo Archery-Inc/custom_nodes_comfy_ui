@@ -26,6 +26,10 @@ FRAGMENT_SHADER_HEADER = """
     uniform sampler2D iChannel0;
     uniform vec3 backgroundColor;
     uniform vec3 foregroundColor;
+    uniform float textureTop;
+    uniform float textureBottom;
+    uniform float textureLeft;
+    uniform float textureRight;
 
     out vec4 fragColor;
 """
