@@ -154,7 +154,8 @@ class GLSL:
             pil_img,
             (left, bottom),
         )
-        return final_img, (
+        return (
+            final_img,
             left / out_width,
             right / out_width,
             bottom / out_height,
