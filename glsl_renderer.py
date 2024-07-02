@@ -57,7 +57,9 @@ class GLSL:
         )
 
         # Send image to shader
-        image = self._resize_and_center_image(images[0], out_width, out_height)
+        (image, l, r, b, t) = self._resize_and_center_image(
+            images[0], out_width, out_height
+        )
         iChannel0 = ctx.texture(image.size, components=4, data=image.tobytes())
         iChannel0.repeat_x = False
         iChannel0.repeat_y = False
@@ -67,6 +69,10 @@ class GLSL:
         self.iTime = program.get("iTime", None)
         self.iFrame = program.get("iFrame", None)
         iResolution = program.get("iResolution", None)
+        left = program.get("textureLeft", None)
+        right = program.get("textureRight", None)
+        bottom = program.get("textureBottom", None)
+        top = program.get("textureTop", None)
         iTimeDelta = program.get("iTimeDelta", None)
         iDuration = program.get("iDuration", None)
         backgroundColor = program.get("backgroundColor", None)
@@ -81,6 +87,14 @@ class GLSL:
             iTimeDelta.value = self.delta
         if iDuration:
             iDuration.value = self.delta * frame_count
+        if left:
+            left.value = l
+        if right:
+            right.value = r
+        if bottom:
+            bottom.value = b
+        if top:
+            top.value = t
         if backgroundColor:
             backgroundColor.value = self._hex_to_vec3(background)
         if foregroundColor:
@@ -117,23 +131,32 @@ class GLSL:
         final_img = Image.new("RGBA", (out_width, out_height))
 
         # Put the image at the center while keeping aspect ratio
-        margin_percent_square = 0.1
-        margin_percent_x = 0.2
-        margin_percent_y = 0.3
         if 0.7 < pil_img.width / pil_img.height < 1.3:
+            margin_percent_square = 0.1
             w = int((1 - 2 * margin_percent_square) * out_width)
             pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
         elif out_width / out_height < pil_img.width / pil_img.height:
             # Horizontal image
+            margin_percent_x = 0.2
             w = int((1 - 2 * margin_percent_x) * out_width)
             pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
         else:
             # Vertical image
+            margin_percent_y = 0.3
             h = int((1 - 2 * margin_percent_y) * out_height)
             pil_img = pil_img.resize((math.ceil(h * pil_img.width / pil_img.height), h))
 
+        left = (out_width - pil_img.width) // 2
+        bottom = (out_height - pil_img.height) // 2
+        right = left + pil_img.width
+        top = bottom + pil_img.height
         final_img.paste(
             pil_img,
-            ((out_width - pil_img.width) // 2, (out_height - pil_img.height) // 2),
+            (left, bottom),
         )
-        return final_img
+        return final_img, (
+            left / out_width,
+            right / out_width,
+            bottom / out_height,
+            top / out_height,
+        )
