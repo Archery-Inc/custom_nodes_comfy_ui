@@ -47,9 +47,7 @@ class GLSL:
         background,
         foreground,
     ):
-        ctx = moderngl.create_context(
-            standalone=True, backend="egl", libgl="libGL.so.1", libegl="libEGL.so.1"
-        )
+        ctx = moderngl.create_context(standalone=True)
         program = ctx.program(VERTEX_SHADER, FRAGMENT_SHADER_HEADER + shader)
 
         vbo = ctx.buffer(
