@@ -1,7 +1,9 @@
 from .logic import ArcheryIfElse
 from .inputs import *
 from .glsl import ArcheryGLSL
+from .processors import *
 import shutil, os, __main__, filecmp
+
 
 def install_js_files():
     extensions_folder = os.path.join(
@@ -31,6 +33,8 @@ def install_js_files():
 install_js_files()
 
 NODE_CLASS_MAPPINGS = {
+    "ArcheryColorDetection": ArcheryColorDetection,
+    "ArcheryPrint": ArcheryPrint,
     "ArcheryInputBool": ArcheryInputBool,
     "ArcheryInputFloat": ArcheryInputFloat,
     "ArcheryInputInt": ArcheryInputInt,

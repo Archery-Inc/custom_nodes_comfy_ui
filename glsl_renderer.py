@@ -125,7 +125,7 @@ class GLSL:
 
     def _hex_to_vec3(self, hex):
         h = hex.lstrip("#")
-        return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
+        return tuple(int(h[i : i + 2], 16) / 255 for i in (0, 2, 4))
 
     def _resize_and_center_image(self, img, out_width, out_height):
         numpy_img = 255.0 * img.cpu().numpy()
@@ -139,12 +139,12 @@ class GLSL:
             pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
         elif out_width / out_height < pil_img.width / pil_img.height:
             # Horizontal image
-            margin_percent_x = 0.2
+            margin_percent_x = 0.1
             w = int((1 - 2 * margin_percent_x) * out_width)
             pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
         else:
             # Vertical image
-            margin_percent_y = 0.3
+            margin_percent_y = 0.1
             h = int((1 - 2 * margin_percent_y) * out_height)
             pil_img = pil_img.resize((math.ceil(h * pil_img.width / pil_img.height), h))
 
