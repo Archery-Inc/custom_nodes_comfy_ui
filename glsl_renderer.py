@@ -133,23 +133,13 @@ class GLSL:
         final_img = Image.new("RGBA", (out_width, out_height))
 
         # Put the image at the center while keeping aspect ratio
-        if 0.7 < pil_img.width / pil_img.height < 1.3:
-            margin_percent_square = 0.1
-            w = int((1 - 2 * margin_percent_square) * out_width)
-            pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
-        elif (
-            out_width / out_height < pil_img.width / pil_img.height
-            and out_width / out_height < 1.0
-        ):
-            # Horizontal image
-            margin_percent_x = 0.1
-            w = int((1 - 2 * margin_percent_x) * out_width)
-            pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
-        else:
-            # Vertical image
-            margin_percent_y = 0.1
-            h = int((1 - 2 * margin_percent_y) * out_height)
-            pil_img = pil_img.resize((math.ceil(h * pil_img.width / pil_img.height), h))
+        margin_percent = 0.1
+        w = int((1 - 2 * margin_percent) * out_width)
+        h = math.ceil(w * pil_img.height / pil_img.width)
+        if h > out_height:
+            h = int((1 - 2 * margin_percent) * out_height)
+            w = math.ceil(h * pil_img.width / pil_img.height)
+        pil_img = pil_img.resize((w, h))
 
         left = (out_width - pil_img.width) // 2
         bottom = (out_height - pil_img.height) // 2
