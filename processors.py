@@ -102,7 +102,7 @@ class ArcheryColorDetection:
         filtered_pixels = pixels[mask]
         colors = (
             KMeans(
-                n_clusters=2,
+                n_clusters=1,
                 algorithm=self.algorithm,
                 max_iter=self.num_iterations,
             )
