@@ -137,7 +137,10 @@ class GLSL:
             margin_percent_square = 0.1
             w = int((1 - 2 * margin_percent_square) * out_width)
             pil_img = pil_img.resize((w, math.ceil(w * pil_img.height / pil_img.width)))
-        elif out_width / out_height < pil_img.width / pil_img.height:
+        elif (
+            out_width / out_height < pil_img.width / pil_img.height
+            and out_width / out_height < 1.0
+        ):
             # Horizontal image
             margin_percent_x = 0.1
             w = int((1 - 2 * margin_percent_x) * out_width)
