@@ -46,6 +46,7 @@ class GLSL:
         frame_count,
         background,
         foreground,
+        position,
     ):
         ctx = moderngl.create_context(standalone=True)
         program = ctx.program(VERTEX_SHADER, FRAGMENT_SHADER_HEADER + shader)
@@ -60,7 +61,7 @@ class GLSL:
 
         # Send image to shader
         (image, l, r, b, t) = self._resize_and_center_image(
-            images[0], out_width, out_height
+            images[0], out_width, out_height, position
         )
         iChannel0 = ctx.texture(image.size, components=4, data=image.tobytes())
         iChannel0.repeat_x = False
@@ -127,7 +128,7 @@ class GLSL:
         h = hex.lstrip("#")
         return tuple(int(h[i : i + 2], 16) / 255 for i in (0, 2, 4))
 
-    def _resize_and_center_image(self, img, out_width, out_height):
+    def _resize_and_center_image(self, img, out_width, out_height, position):
         numpy_img = 255.0 * img.cpu().numpy()
         pil_img = Image.fromarray(np.clip(numpy_img, 0, 255).astype(np.uint8))
         final_img = Image.new("RGBA", (out_width, out_height))
@@ -141,18 +142,38 @@ class GLSL:
             w = math.ceil(h * pil_img.width / pil_img.height)
         pil_img = pil_img.resize((w, h))
 
-        left = (out_width - pil_img.width) // 2
-        bottom = (out_height - pil_img.height) // 2
+        match position:
+            case "center":
+                left, top = (out_width - w) // 2, (out_height - h) // 2
+            case "left":
+                left, top = 0, (out_height - h) // 2
+            case "right":
+                left, top = out_width - w, (out_height - h) // 2
+            case "top":
+                left, top = (out_width - w) // 2, 0
+            case "bottom":
+                left, top = (out_width - w) // 2, out_height - h
+            case "top-left":
+                left, top = 0, 0
+            case "top-right":
+                left, top = out_width - w, 0
+            case "bottom-left":
+                left, top = 0, out_height - h
+            case "bottom-right":
+                left, top = out_width - w, out_height - h
+            case _:
+                left, top = (out_width - w) // 2, (out_height - h) // 2
+
         right = left + pil_img.width
-        top = bottom + pil_img.height
+        bottom = top + pil_img.height
         final_img.paste(
             pil_img,
-            (left, bottom),
+            (left, top),
         )
         return (
             final_img,
             left / out_width,
             right / out_width,
-            bottom / out_height,
             top / out_height,
+            bottom / out_height,
         )

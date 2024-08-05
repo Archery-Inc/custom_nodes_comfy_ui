@@ -26,13 +26,47 @@ class ArcheryGLSL:
                 "skip_frame": ("INT", {"default": 1, "min": 1}),
                 "background": ("STRING", {"default": "#FFFFFF"}),
                 "foreground": ("STRING", {"default": "#000000"}),
+                "position": (
+                    [
+                        "center",
+                        "left",
+                        "right",
+                        "top",
+                        "bottom",
+                        "top-left",
+                        "top-right",
+                        "bottom-left",
+                        "bottom-right",
+                    ],
+                    {"default": "center"},
+                ),
             },
         }
 
     def run(
-        self, image, out_width, out_height, frame_rate, frame_count, shader, skip_frame, background, foreground
+        self,
+        image,
+        out_width,
+        out_height,
+        frame_rate,
+        frame_count,
+        shader,
+        skip_frame,
+        background,
+        foreground,
+        position,
     ):
-        glsl = GLSL(image, out_width, out_height, shader, frame_rate, frame_count, background, foreground)
+        glsl = GLSL(
+            image,
+            out_width,
+            out_height,
+            shader,
+            frame_rate,
+            frame_count,
+            background,
+            foreground,
+            position
+        )
         images = [
             glsl.render(frame_index, skip_frame)
             for frame_index in range(math.ceil(frame_count / skip_frame))

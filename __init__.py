@@ -34,6 +34,7 @@ install_js_files()
 
 NODE_CLASS_MAPPINGS = {
     "ArcheryColorDetection": ArcheryColorDetection,
+    "ArcheryInputPositionSelector": ArcheryInputPositionSelector,
     "ArcheryPrint": ArcheryPrint,
     "ArcheryInputBool": ArcheryInputBool,
     "ArcheryInputFloat": ArcheryInputFloat,
@@ -64,6 +65,7 @@ NODE_CLASS_MAPPINGS = {
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "ArcheryInputBool": "Archery Input Bool",
+    "ArcheryInputPositionSelector": "Archery Input Position Selector",
     "ArcheryInputFloat": "Archery Input Float",
     "ArcheryInputInt": "Archery Input Int",
     "ArcheryInputAnimateDiffModelSelector": "Archery Input AnimateDiffModel Selector",
