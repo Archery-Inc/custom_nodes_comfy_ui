@@ -144,25 +144,27 @@ class GLSL:
             w = math.ceil(h * pil_img.width / pil_img.height)
         pil_img = pil_img.resize((w, h))
 
+        padding_percent = 0.05
+        p = int(padding_percent * out_width)
         match position:
             case "center":
                 left, top = (out_width - w) // 2, (out_height - h) // 2
             case "left":
-                left, top = 0, (out_height - h) // 2
+                left, top = p, (out_height - h) // 2
             case "right":
-                left, top = out_width - w, (out_height - h) // 2
+                left, top = out_width - w - p, (out_height - h) // 2
             case "top":
-                left, top = (out_width - w) // 2, 0
+                left, top = (out_width - w) // 2, p
             case "bottom":
-                left, top = (out_width - w) // 2, out_height - h
+                left, top = (out_width - w) // 2, out_height - h - p
             case "top-left":
-                left, top = 0, 0
+                left, top = p, p
             case "top-right":
-                left, top = out_width - w, 0
+                left, top = out_width - w - p, p
             case "bottom-left":
-                left, top = 0, out_height - h
+                left, top = p, out_height - h - p
             case "bottom-right":
-                left, top = out_width - w, out_height - h
+                left, top = out_width - w - p, out_height - h - p
             case _:
                 left, top = (out_width - w) // 2, (out_height - h) // 2
 
