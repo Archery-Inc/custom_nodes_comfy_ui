@@ -39,17 +39,18 @@ class GLSL:
     def __init__(
         self,
         images,
-        out_width,
-        out_height,
-        shader,
-        frame_rate,
-        frame_count,
-        background,
-        foreground,
-        position,
+        out_width: int,
+        out_height: int,
+        shader: str,
+        frame_rate: int,
+        frame_count: int,
+        background: str,
+        foreground: str,
+        position: str,
+        transform_matrix: list[float],
     ):
         ctx = moderngl.create_context(
-            standalone=True, backend="egl", libgl="libGL.so.1", libegl="libEGL.so.1"
+            standalone=True,
         )
         program = ctx.program(VERTEX_SHADER, FRAGMENT_SHADER_HEADER + shader)
 
@@ -62,9 +63,12 @@ class GLSL:
         )
 
         # Send image to shader
-        (image, l, r, b, t) = self._resize_and_center_image(
-            images[0], out_width, out_height, position
+        image = (
+            self._transform_image(images[0], out_width, out_height, transform_matrix)
+            if transform_matrix != [1, 0, 0, 0, 1, 0, 0, 0, 1]
+            else self._transform_legacy(images[0], out_width, out_height, position)
         )
+
         iChannel0 = ctx.texture(image.size, components=4, data=image.tobytes())
         iChannel0.repeat_x = False
         iChannel0.repeat_y = False
@@ -74,10 +78,6 @@ class GLSL:
         self.iTime = program.get("iTime", None)
         self.iFrame = program.get("iFrame", None)
         iResolution = program.get("iResolution", None)
-        left = program.get("textureLeft", None)
-        right = program.get("textureRight", None)
-        bottom = program.get("textureBottom", None)
-        top = program.get("textureTop", None)
         iTimeDelta = program.get("iTimeDelta", None)
         iDuration = program.get("iDuration", None)
         backgroundColor = program.get("backgroundColor", None)
@@ -92,20 +92,12 @@ class GLSL:
             iTimeDelta.value = self.delta
         if iDuration:
             iDuration.value = self.delta * frame_count
-        if left:
-            left.value = l
-        if right:
-            right.value = r
-        if bottom:
-            bottom.value = b
-        if top:
-            top.value = t
         if backgroundColor:
             backgroundColor.value = self._hex_to_vec3(background)
         if foregroundColor:
             foregroundColor.value = self._hex_to_vec3(foreground)
 
-    def render(self, frame_index, skip_frame):
+    def render(self, frame_index: int, skip_frame: int):
         self.fbo.use()
         self.fbo.clear(1.0, 1.0, 1.0, 1.0)
 
@@ -126,11 +118,11 @@ class GLSL:
         pixels = np.array(image).astype(np.float32) / 255.0
         return torch.from_numpy(pixels)[None,]
 
-    def _hex_to_vec3(self, hex):
+    def _hex_to_vec3(self, hex: str):
         h = hex.lstrip("#")
         return tuple(int(h[i : i + 2], 16) / 255 for i in (0, 2, 4))
 
-    def _resize_and_center_image(self, img, out_width, out_height, position):
+    def _transform_legacy(self, img, out_width: int, out_height: int, position: str):
         numpy_img = 255.0 * img.cpu().numpy()
         pil_img = Image.fromarray(np.clip(numpy_img, 0, 255).astype(np.uint8))
         final_img = Image.new("RGBA", (out_width, out_height))
@@ -168,16 +160,34 @@ class GLSL:
             case _:
                 left, top = (out_width - w) // 2, (out_height - h) // 2
 
-        right = left + pil_img.width
-        bottom = top + pil_img.height
         final_img.paste(
             pil_img,
             (left, top),
         )
-        return (
-            final_img,
-            left / out_width,
-            right / out_width,
-            top / out_height,
-            bottom / out_height,
+        return final_img
+
+    def _transform_image(self, img, out_width: int, out_height: int, mat: list[float]):
+        numpy_img = 255.0 * img.cpu().numpy()
+        src_img = Image.fromarray(np.clip(numpy_img, 0, 255).astype(np.uint8))
+        dst_img = Image.new("RGBA", (out_width, out_height))
+
+        determinant = mat[0] * mat[4] - mat[3] * mat[1]
+        if determinant == 0:
+            return dst_img
+        if determinant < 0:
+            src_img = src_img.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+
+        scale_x = math.sqrt(mat[0] ** 2 + mat[3] ** 2)
+        scale_y = math.sqrt(mat[1] ** 2 + mat[4] ** 2)
+        dimension = (int(scale_x * src_img.width), int(scale_y * src_img.height))
+
+        angle = math.atan2(mat[3] / scale_y, mat[0] / scale_x)
+        translation = (mat[2], mat[5])
+
+        # Applies the transformation
+        dst_img.paste(
+            src_img.resize(dimension).rotate(angle * 180 / math.pi, expand=True),
+            translation,
         )
+
+        return dst_img

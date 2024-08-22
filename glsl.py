@@ -1,5 +1,6 @@
 import torch
 import math
+import json
 from .glsl_renderer import GLSL
 
 # pip install moderngl
@@ -40,6 +41,10 @@ class ArcheryGLSL:
                     ],
                     {"default": "center"},
                 ),
+                "transform_matrix": (
+                    "STRING",
+                    {"default": "[1, 0, 0, 0, 1, 0, 0, 0, 1]"},
+                ),
             },
         }
 
@@ -54,7 +59,8 @@ class ArcheryGLSL:
         skip_frame,
         background,
         foreground,
-        position,
+        position: str,
+        transform_matrix: str,
     ):
         glsl = GLSL(
             image,
@@ -65,7 +71,8 @@ class ArcheryGLSL:
             frame_count,
             background,
             foreground,
-            position
+            position,
+            json.loads(transform_matrix),
         )
         images = [
             glsl.render(frame_index, skip_frame)
