@@ -47,7 +47,7 @@ class GLSL:
         background: str,
         foreground: str,
         position: str,
-        transform_matrix: list[float],
+        margin: float,
     ):
         ctx = moderngl.create_context(
             standalone=True,
@@ -63,10 +63,8 @@ class GLSL:
         )
 
         # Send image to shader
-        image = (
-            self._transform_image(images[0], out_width, out_height, transform_matrix)
-            if transform_matrix != [1, 0, 0, 0, 1, 0, 0, 0, 1]
-            else self._transform_legacy(images[0], out_width, out_height, position)
+        image = self._transform(
+            images[0], out_width, out_height, position, margin
         )
 
         iChannel0 = ctx.texture(image.size, components=4, data=image.tobytes())
@@ -122,22 +120,22 @@ class GLSL:
         h = hex.lstrip("#")
         return tuple(int(h[i : i + 2], 16) / 255 for i in (0, 2, 4))
 
-    def _transform_legacy(self, img, out_width: int, out_height: int, position: str):
+    def _transform(
+        self, img, out_width: int, out_height: int, position: str, margin: float
+    ):
         numpy_img = 255.0 * img.cpu().numpy()
         pil_img = Image.fromarray(np.clip(numpy_img, 0, 255).astype(np.uint8))
         final_img = Image.new("RGBA", (out_width, out_height))
 
         # Put the image at the center while keeping aspect ratio
-        margin_percent = 0.1
-        w = int((1 - 2 * margin_percent) * out_width)
+        w = int((1 - 2 * margin) * out_width)
         h = math.ceil(w * pil_img.height / pil_img.width)
         if h > out_height:
-            h = int((1 - 2 * margin_percent) * out_height)
+            h = int((1 - 2 * margin) * out_height)
             w = math.ceil(h * pil_img.width / pil_img.height)
         pil_img = pil_img.resize((w, h))
 
-        padding_percent = 0.05
-        p = int(padding_percent * out_width)
+        p = int(margin / 2 * out_width)
         match position:
             case "center":
                 left, top = (out_width - w) // 2, (out_height - h) // 2

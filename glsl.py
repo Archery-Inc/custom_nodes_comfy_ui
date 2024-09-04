@@ -41,10 +41,7 @@ class ArcheryGLSL:
                     ],
                     {"default": "center"},
                 ),
-                "transform_matrix": (
-                    "STRING",
-                    {"default": "[1, 0, 0, 0, 1, 0, 0, 0, 1]"},
-                ),
+                "margin": ("FLOAT", {"default": 0, "min": -1, "max": 1}),
             },
         }
 
@@ -60,7 +57,7 @@ class ArcheryGLSL:
         background,
         foreground,
         position: str,
-        transform_matrix: str,
+        margin: float,
     ):
         glsl = GLSL(
             image,
@@ -72,7 +69,7 @@ class ArcheryGLSL:
             background,
             foreground,
             position,
-            json.loads(transform_matrix),
+            margin,
         )
         images = [
             glsl.render(frame_index, skip_frame)
