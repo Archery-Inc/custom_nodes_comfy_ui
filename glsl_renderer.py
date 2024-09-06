@@ -63,9 +63,7 @@ class GLSL:
         )
 
         # Send image to shader
-        image = self._transform(
-            images[0], out_width, out_height, position, margin
-        )
+        image = self._transform(images[0], out_width, out_height, position, margin)
 
         iChannel0 = ctx.texture(image.size, components=4, data=image.tobytes())
         iChannel0.repeat_x = False
@@ -135,7 +133,7 @@ class GLSL:
             w = math.ceil(h * pil_img.width / pil_img.height)
         pil_img = pil_img.resize((w, h))
 
-        p = int(margin / 2 * out_width)
+        p = 0
         match position:
             case "center":
                 left, top = (out_width - w) // 2, (out_height - h) // 2
