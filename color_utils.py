@@ -32,7 +32,7 @@ def gamma_correct(value: float) -> float:
 
 
 def get_luminance(rgb: np.ndarray) -> float:
-    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
+    return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255
 
 
 def rgb_to_hex(rgb: np.ndarray) -> str:
@@ -263,7 +263,6 @@ def ciede2000_distance(lab1: np.ndarray, lab2: np.ndarray) -> float:
 
 
 def cie94_distance_rgb(rgb1: np.ndarray, rgb2: np.ndarray) -> float:
-    print(rgb1, rgb2)
     lab1 = rgb_to_lab(rgb1)
     lab2 = rgb_to_lab(rgb2)
     return cie94_distance(lab1, lab2)

@@ -279,7 +279,6 @@ class ArcheryBackgroundColorDetection:
                 cluster_sizes[i] / total,
             )
             for i, c in enumerate(colors)
-            # To test:   if cluster_sizes[i] / total > 0.05
         ]
 
         return sorted(rgbs_with_sizes, key=lambda x: x[1], reverse=True)
@@ -326,42 +325,58 @@ class ArcheryPromptParser:
     ) -> str:
         min_color_proportion_threshold = 0.05
         proportions = [proportion0, proportion1, proportion2, proportion3]
+        colors = [color0, color1, color2, color3]
+        major_colors = [
+            colors[i]
+            for i in range(len(colors))
+            if proportions[i] > min_color_proportion_threshold
+        ]
 
-        def convert_to_lower(match):
-            last_available_color_index = 0
-            for i in range(4):
-                if proportions[i] > min_color_proportion_threshold:
-                    last_available_color_index = i
-            str_parts = match.group().split("|")
-            str_to_replace = self.get_first_working_part(
-                str_parts, last_available_color_index
+        readable_colors = []
+        for color in major_colors:
+            readable_color = self.color_to_human_readable(color)
+            if readable_color not in readable_colors:  # Deduplicate colors
+                readable_colors.append(readable_color)
+
+        def replace_colors(match):
+            fallbacks = match.group().split("|")
+            fallback = self.get_first_working_fallback(
+                fallbacks, len(readable_colors) - 1
             )
-
-            return (
-                str_to_replace.replace("color0", self.get_color(color0))
-                .replace("color1", self.get_color(color1))
-                .replace("color2", self.get_color(color2))
-                .replace("color3", self.get_color(color3))
-                .replace("background", self.get_color(background_color))
-                .replace("{", "")
+            replaced_str = (
+                fallback.replace("{", "")
                 .replace("}", "")
+                .replace("background", self.color_to_human_readable(background_color))
             )
+            for i in range(len(readable_colors)):
+                replaced_str = replaced_str.replace(f"color{i}", readable_colors[i])
+            return replaced_str
 
-        result = re.sub(r"\{[^}]*\}", convert_to_lower, prompt)
-        print(result)
+        result = re.sub(r"\{[^}]*\}", replace_colors, prompt)
+        print("Prompt: ", result)
         return (result,)
 
-    def get_first_working_part(
-        self, str_parts: list[str], last_available_color_index: int
+    def get_first_working_fallback(
+        self, fallbacks: list[str], last_available_color_index: int
     ):
-        for part in str_parts:
+        for fallback in fallbacks:
             is_working = True
             for i in range(last_available_color_index + 1, 4):
-                if f"color{i}" in part:
+                if f"color{i}" in fallback:
                     is_working = False
+                    break
             if is_working:
-                return part
-        return str_parts[-1]
+                return fallback
+        return fallbacks[-1]
 
-    def get_color(self, color: str):
-        return get_color_from_rgb(hex_to_rgb(color))["color_family"]
+    def color_to_human_readable(self, color: str):
+        rgb = hex_to_rgb(color)
+        luminance = get_luminance(rgb)
+        if luminance < 0.2:
+            return "black"
+        if luminance > 0.8:
+            return "white"
+        mapping = get_color_from_rgb(rgb)
+        family = mapping["color_family"]
+        type = mapping["color_type"].removesuffix(" color")
+        return type + " " + family
