@@ -40,6 +40,10 @@ def rgb_to_hex(rgb: np.ndarray) -> str:
     return "#{:02x}{:02x}{:02x}".format(r, g, b)
 
 
+def hex_to_rgb(hex: str) -> np.ndarray:
+    return np.array([int(hex[1:3], 16), int(hex[3:5], 16), int(hex[5:7], 16)])
+
+
 def rgb_to_hsl(rgb: np.ndarray) -> np.ndarray:
     r, g, b = rgb / 255.0
 

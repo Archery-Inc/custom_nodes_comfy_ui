@@ -1,9 +1,11 @@
 from collections import Counter
+import re
 import numpy as np
 from sklearn.cluster import KMeans
 import sys, os, torch
 from numpy import ndarray
 from .color_utils import *
+from .colornamer import get_color_from_rgb
 from typing import List
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -281,3 +283,85 @@ class ArcheryBackgroundColorDetection:
         ]
 
         return sorted(rgbs_with_sizes, key=lambda x: x[1], reverse=True)
+
+
+class ArcheryPromptParser:
+    CATEGORY = "archery"
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "prompt": ("STRING", {"default": ""}),
+            },
+            "optional": {
+                "color0": ("STRING", {"default": ""}),
+                "color1": ("STRING", {"default": ""}),
+                "color2": ("STRING", {"default": ""}),
+                "color3": ("STRING", {"default": ""}),
+                "proportion0": ("FLOAT", {"default": 0}),
+                "proportion1": ("FLOAT", {"default": 0}),
+                "proportion2": ("FLOAT", {"default": 0}),
+                "proportion3": ("FLOAT", {"default": 0}),
+                "background_color": ("STRING", {"default": ""}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("prompt",)
+    FUNCTION = "main"
+
+    def main(
+        self,
+        prompt: str,
+        color0: str,
+        color1: str,
+        color2: str,
+        color3: str,
+        proportion0: float,
+        proportion1: float,
+        proportion2: float,
+        proportion3: float,
+        background_color: str,
+    ) -> str:
+        min_color_proportion_threshold = 0.05
+        proportions = [proportion0, proportion1, proportion2, proportion3]
+
+        def convert_to_lower(match):
+            last_available_color_index = 0
+            for i in range(4):
+                if proportions[i] > min_color_proportion_threshold:
+                    last_available_color_index = i
+            str_parts = match.group().split("|")
+            str_to_replace = self.get_first_working_part(
+                str_parts, last_available_color_index
+            )
+
+            return (
+                str_to_replace.replace("color0", self.get_color(color0))
+                .replace("color1", self.get_color(color1))
+                .replace("color2", self.get_color(color2))
+                .replace("color3", self.get_color(color3))
+                .replace("background", self.get_color(background_color))
+                .replace("{", "")
+                .replace("}", "")
+            )
+
+        result = re.sub(r"\{[^}]*\}", convert_to_lower, prompt)
+        print(result)
+        return (result,)
+
+    def get_first_working_part(
+        self, str_parts: list[str], last_available_color_index: int
+    ):
+        for part in str_parts:
+            is_working = True
+            for i in range(last_available_color_index + 1, 4):
+                if f"color{i}" in part:
+                    is_working = False
+            if is_working:
+                return part
+        return str_parts[-1]
+
+    def get_color(self, color: str):
+        return get_color_from_rgb(hex_to_rgb(color))["color_family"]
