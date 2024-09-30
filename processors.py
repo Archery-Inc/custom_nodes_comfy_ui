@@ -154,6 +154,7 @@ class ArcheryBackgroundColorDetection:
                         "max": 10,
                     },
                 ),
+                "default_background": ("STRING", {"default": ""}),
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
@@ -197,6 +198,7 @@ class ArcheryBackgroundColorDetection:
         k_means_algorithm: str = "lloyd",
         accuracy: int = 60,
         count: int = 4,
+        default_background: str = "",
         unique_id: str = "",
         extra_pnginfo: str = "",
         output_text: str = "",
@@ -206,7 +208,10 @@ class ArcheryBackgroundColorDetection:
         self.algorithm = k_means_algorithm
 
         colors = self.get_main_colors(input_image, count)
-        output_color = self.get_background_color(colors)
+        if default_background:
+            output_color = default_background
+        else:
+            output_color = self.get_background_color(colors)
 
         hex_colors = [rgb_to_hex(rgb) for (rgb, _) in colors]
         proportions = [proportion for (_, proportion) in colors]
