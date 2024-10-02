@@ -682,6 +682,7 @@ POSITIONS = [
     "top-right",
     "bottom-left",
     "bottom-right",
+    "custom",
 ]
 
 

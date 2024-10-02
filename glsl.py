@@ -38,10 +38,13 @@ class ArcheryGLSL:
                         "top-right",
                         "bottom-left",
                         "bottom-right",
+                        "custom",
                     ],
                     {"default": "center"},
                 ),
                 "margin": ("FLOAT", {"default": 0, "min": -1, "max": 1}),
+                "x": ("FLOAT", {"default": 0, "min": 0, "max": 1}),
+                "y": ("FLOAT", {"default": 0, "min": 0, "max": 1}),
             },
         }
 
@@ -58,6 +61,8 @@ class ArcheryGLSL:
         foreground,
         position: str,
         margin: float,
+        x: float,
+        y: float,
     ):
         glsl = GLSL(
             image,
@@ -70,6 +75,8 @@ class ArcheryGLSL:
             foreground,
             position,
             margin,
+            x,
+            y,
         )
         images = [
             glsl.render(frame_index, skip_frame)

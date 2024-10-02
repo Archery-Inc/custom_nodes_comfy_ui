@@ -48,6 +48,8 @@ class GLSL:
         foreground: str,
         position: str,
         margin: float,
+        x: float,
+        y: float,
     ):
         ctx = moderngl.create_context(
             standalone=True,
@@ -63,7 +65,9 @@ class GLSL:
         )
 
         # Send image to shader
-        image = self._transform(images[0], out_width, out_height, position, margin)
+        image = self._transform(
+            images[0], out_width, out_height, position, margin, x, y
+        )
 
         iChannel0 = ctx.texture(image.size, components=4, data=image.tobytes())
         iChannel0.repeat_x = False
@@ -119,7 +123,14 @@ class GLSL:
         return tuple(int(h[i : i + 2], 16) / 255 for i in (0, 2, 4))
 
     def _transform(
-        self, img, out_width: int, out_height: int, position: str, margin: float
+        self,
+        img,
+        out_width: int,
+        out_height: int,
+        position: str,
+        margin: float,
+        x: float,
+        y: float,
     ):
         numpy_img = 255.0 * img.cpu().numpy()
         pil_img = Image.fromarray(np.clip(numpy_img, 0, 255).astype(np.uint8))
@@ -128,7 +139,7 @@ class GLSL:
         # Put the image at the center while keeping aspect ratio
         w = int((1 - 2 * margin) * out_width)
         h = math.ceil(w * pil_img.height / pil_img.width)
-        if h > out_height:
+        if out_width * pil_img.height / pil_img.width > out_height:
             h = int((1 - 2 * margin) * out_height)
             w = math.ceil(h * pil_img.width / pil_img.height)
         pil_img = pil_img.resize((w, h))
@@ -153,6 +164,8 @@ class GLSL:
                 left, top = p, out_height - h - p
             case "bottom-right":
                 left, top = out_width - w - p, out_height - h - p
+            case "custom":
+                left, top = int(x * out_width), int(y * out_height)
             case _:
                 left, top = (out_width - w) // 2, (out_height - h) // 2
 
