@@ -30,6 +30,8 @@ FRAGMENT_SHADER_HEADER = """
     uniform float textureBottom;
     uniform float textureLeft;
     uniform float textureRight;
+    uniform float int0;
+    uniform float int1;
 
     out vec4 fragColor;
 """
@@ -50,6 +52,8 @@ class GLSL:
         margin: float,
         x: float,
         y: float,
+        int0: int,
+        int1: int,
     ):
         ctx = moderngl.create_context(
             standalone=True,
@@ -82,6 +86,8 @@ class GLSL:
         iDuration = program.get("iDuration", None)
         backgroundColor = program.get("backgroundColor", None)
         foregroundColor = program.get("foregroundColor", None)
+        int0_loc = program.get("int0", None)
+        int1_loc = program.get("int1", None)
 
         # Uniform initialization
         self.runtime = 0
@@ -96,6 +102,10 @@ class GLSL:
             backgroundColor.value = self._hex_to_vec3(background)
         if foregroundColor:
             foregroundColor.value = self._hex_to_vec3(foreground)
+        if int0_loc:
+            int0_loc.value = int0
+        if int1_loc:
+            int1_loc.value = int1
 
     def render(self, frame_index: int, skip_frame: int):
         self.fbo.use()

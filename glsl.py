@@ -19,7 +19,7 @@ class ArcheryGLSL:
                 "image": ("IMAGE",),
                 "out_width": ("INT", {"default": 1024, "min": 1}),
                 "out_height": ("INT", {"default": 576, "min": 1}),
-                "frame_rate": ("INT", {"default": 24, "min": 1, "max": 2147483647}),
+                "frame_rate": ("FLOAT", {"default": 24, "min": 1, "max": 2147483647}),
                 "frame_count": ("INT", {"default": 72, "min": 1, "max": 2147483647}),
                 "shader": ("STRING", {"multiline": True}),
             },
@@ -45,6 +45,8 @@ class ArcheryGLSL:
                 "margin": ("FLOAT", {"default": 0, "min": -1, "max": 1}),
                 "x": ("FLOAT", {"default": 0, "min": 0, "max": 1}),
                 "y": ("FLOAT", {"default": 0, "min": 0, "max": 1}),
+                "int0": ("INT", {"default": 0}),
+                "int1": ("INT", {"default": 0}),
             },
         }
 
@@ -63,6 +65,8 @@ class ArcheryGLSL:
         margin: float,
         x: float,
         y: float,
+        int0: int,
+        int1: int,
     ):
         glsl = GLSL(
             image,
@@ -77,6 +81,8 @@ class ArcheryGLSL:
             margin,
             x,
             y,
+            int0,
+            int1,
         )
         images = [
             glsl.render(frame_index, skip_frame)
