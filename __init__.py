@@ -34,6 +34,7 @@ install_js_files()
 
 NODE_CLASS_MAPPINGS = {
     "ArcheryColorDetection": ArcheryColorDetection,
+    "ArcheryLatentKeyframe": ArcheryLatentKeyframe,
     "ArcheryBackgroundColorDetection": ArcheryBackgroundColorDetection,
     "ArcheryPromptParser": ArcheryPromptParser,
     "ArcheryInputPositionSelector": ArcheryInputPositionSelector,

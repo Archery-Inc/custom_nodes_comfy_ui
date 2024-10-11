@@ -385,3 +385,152 @@ class ArcheryPromptParser:
         family = mapping["color_family"]
         type = mapping["color_type"].removesuffix(" color")
         return type + " " + family
+
+
+# These values are established by empiricism with tests (tradeoff: performance VS precision)
+NEWTON_ITERATIONS = 4
+NEWTON_MIN_SLOPE = 0.001
+SUBDIVISION_PRECISION = 0.0000001
+SUBDIVISION_MAX_ITERATIONS = 10
+
+kSplineTableSize = 11
+kSampleStepSize = 1.0 / (kSplineTableSize - 1.0)
+
+
+def A(aA1: float, aA2: float):
+    return 1.0 - 3.0 * aA2 + 3.0 * aA1
+
+
+def B(aA1: float, aA2: float):
+    return 3.0 * aA2 - 6.0 * aA1
+
+
+def C(aA1: float):
+    return 3.0 * aA1
+
+
+# Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
+def calc_bezier(aT: float, aA1: float, aA2: float):
+    return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT
+
+
+# Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
+def get_slope(aT: float, aA1: float, aA2: float):
+    return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1)
+
+
+def binary_subdivide(aX: float, aA: float, aB: float, mX1: float, mX2: float):
+    i = 0
+    currentX, currentT = 0.0, 0.0
+    while i < SUBDIVISION_MAX_ITERATIONS:
+        currentT = aA + (aB - aA) / 2.0
+        currentX = calc_bezier(currentT, mX1, mX2) - aX
+        if abs(currentX) <= SUBDIVISION_PRECISION:
+            break
+        if currentX > 0.0:
+            aB = currentT
+        else:
+            aA = currentT
+        i += 1
+    return currentT
+
+
+def newton_raphson_iterate(aX: float, aGuessT: float, mX1: float, mX2: float):
+    for i in range(NEWTON_ITERATIONS):
+        current_slope = get_slope(aGuessT, mX1, mX2)
+        if current_slope == 0.0:
+            return aGuessT
+        currentX = calc_bezier(aGuessT, mX1, mX2) - aX
+        aGuessT -= currentX / current_slope
+    return aGuessT
+
+
+def linear_easing(x: float):
+    return x
+
+
+def bezier(mX1: float, mY1: float, mX2: float, mY2: float):
+    if not (0 <= mX1 <= 1 and 0 <= mX2 <= 1):
+        raise ValueError("bezier x values must be in [0, 1] range")
+
+    if mX1 == mY1 and mX2 == mY2:
+        return linear_easing
+
+    # Precompute samples table
+    sample_values = np.zeros(kSplineTableSize)
+    for i in range(kSplineTableSize):
+        sample_values[i] = calc_bezier(i * kSampleStepSize, mX1, mX2)
+
+    def get_t_for_x(aX):
+        interval_start = 0.0
+        current_sample = 1
+        last_sample = kSplineTableSize - 1
+
+        while current_sample != last_sample and sample_values[current_sample] <= aX:
+            current_sample += 1
+            interval_start += kSampleStepSize
+        current_sample -= 1
+
+        dist = (aX - sample_values[current_sample]) / (
+            sample_values[current_sample + 1] - sample_values[current_sample]
+        )
+        guess_for_t = interval_start + dist * kSampleStepSize
+
+        initial_slope = get_slope(guess_for_t, mX1, mX2)
+        if initial_slope >= NEWTON_MIN_SLOPE:
+            return newton_raphson_iterate(aX, guess_for_t, mX1, mX2)
+        elif initial_slope == 0.0:
+            return guess_for_t
+        else:
+            return binary_subdivide(
+                aX, interval_start, interval_start + kSampleStepSize, mX1, mX2
+            )
+
+    def bezier_easing(x):
+        if x == 0 or x == 1:
+            return x
+        return calc_bezier(get_t_for_x(x), mY1, mY2)
+
+    return bezier_easing
+
+
+class ArcheryLatentKeyframe:
+    CATEGORY = "archery"
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "frame_start": ("INT", {"default": 0}),
+                "frame_end": ("INT", {"default": 120}),
+                "start_strength": ("FLOAT", {"default": 0}),
+                "end_strength": ("FLOAT", {"default": 1}),
+                "ease": ("STRING", {"default": "1,0,0,1"}),
+            },
+        }
+
+    RETURN_TYPES = ("FLOAT",)
+    RETURN_NAMES = ("floats",)
+    FUNCTION = "main"
+
+    def main(
+        self,
+        frame_start: int,
+        frame_end: int,
+        start_strength: float,
+        end_strength: float,
+        ease: str,
+    ):
+        bezier_xs = [float(x) for x in ease.split(",")]
+        easing_f = bezier(bezier_xs[0], bezier_xs[1], bezier_xs[2], bezier_xs[3])
+
+        values = [0] * 120
+        for i in range(120):
+            if i < frame_start:
+                values[i] = start_strength
+            elif i > frame_end:
+                values[i] = end_strength
+            else:
+                t = easing_f((i - frame_start) / (frame_end - frame_start))
+                values[i] = t * (end_strength - start_strength) + start_strength
+        return (values,)
